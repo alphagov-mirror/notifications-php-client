@@ -25,7 +25,7 @@ class Client {
      * @const string Current version of this client.
      * This follows Semantic Versioning (http://semver.org/)
      */
-    const VERSION = '2.0.0';
+    const VERSION = '2.1.0';
 
     /**
      * @const string The API endpoint for Notify production.
@@ -37,6 +37,7 @@ class Client {
      */
     const PATH_NOTIFICATION_LIST        = '/v2/notifications';
     const PATH_NOTIFICATION_LOOKUP      = '/v2/notifications/%s';
+    const PATH_NOTIFICATION_PDF         = '/v2/notifications/%s/pdf';
     const PATH_NOTIFICATION_SEND_SMS    = '/v2/notifications/sms';
     const PATH_NOTIFICATION_SEND_EMAIL  = '/v2/notifications/email';
     const PATH_NOTIFICATION_SEND_LETTER = '/v2/notifications/letter';
@@ -259,7 +260,29 @@ class Client {
         $path = sprintf( self::PATH_NOTIFICATION_LOOKUP, $notificationId );
 
         return $this->httpGet( $path );
+    }
 
+    /**
+     * This returns the pdf contents of a letter notification.
+     *
+     * @param string $notificationId
+     *
+     * @return string
+     */
+    public function getPdfForLetter( $notificationId ){
+
+        $path = sprintf( self::PATH_NOTIFICATION_PDF, $notificationId );
+
+        $url = $this->createURL( $path, [] );
+        $response = $this->makeGetRequest( $url );
+
+        switch( $response->getStatusCode() ){
+            case 200:
+                // true passed to getBody gets the raw string data
+                return $response->getBody()->getContents();
+            default:
+                return $this->handleErrorResponse( $response );
+        }
     }
 
     /**
@@ -500,15 +523,22 @@ class Client {
      * @throw Exception\NotifyException | Exception\ApiException | Exception\UnexpectedValueException
      */
     private function httpGet( $path, array $query = array() ){
+        $url = $this->createURL( $path, $query );
+        $response = $this->makeGetRequest( $url );
+        return $this->handleJsonResponse( $response );
+    }
 
+    private function createURL( $path, $query ) {
         $url = new Uri( $this->baseUrl . $path );
 
         foreach( $query as $name => $value ){
-            $url = URI::withQueryValue($url, $name, $value );
+            $url = URI::withQueryValue( $url, $name, $value );
         }
 
-        //---
+        return $url;
+    }
 
+    private function makeGetRequest( $url ) {
         $request = new Request(
             'GET',
             $url,
@@ -517,14 +547,14 @@ class Client {
 
         try {
 
-            $response = $this->getHttpClient()->sendRequest( $request );
+            return $this->getHttpClient()->sendRequest( $request );
 
         } catch (\RuntimeException $e){
             throw new Exception\NotifyException( $e->getMessage(), $e->getCode(), $e );
         }
+    }
 
-        //---
-
+    private function handleJsonResponse( $response ) {
         switch( $response->getStatusCode() ){
             case 200:
                 return $this->handleResponse( $response );
@@ -533,8 +563,8 @@ class Client {
             default:
                 return $this->handleErrorResponse( $response );
         }
-
     }
+
 
     /**
      * Performs a POST against the Notify API.
