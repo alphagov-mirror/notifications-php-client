@@ -1,3 +1,10 @@
+## [2.1.1] - 2019-11-04
+
+### Added
+
+* Add new method `getPdfForLetter`
+    * requires $notificationId, returns a string with the pdf data for that letter
+
 ## [2.0.0] - 2019-10-01
 ### Removed
 
