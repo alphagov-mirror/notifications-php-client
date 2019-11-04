@@ -20,7 +20,7 @@
     "guzzlehttp/psr7" : "^1.2"
   },
   "require-dev": {
-    "phpspec/phpspec": "^2.0",
+    "phpspec/phpspec": "^5.0",
     "php-http/message": "^1.1",
     "php-http/curl-client": "*",
     "php-http/mock-client": "*",

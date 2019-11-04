@@ -68,7 +68,7 @@ class JsonWebTokenSpec extends ObjectBehavior
 
     }
 
-    public function getMatchers()
+    public function getMatchers() : array
     {
         return [
             'beValidJWSToken' => function ($token) {

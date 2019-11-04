@@ -25,6 +25,7 @@ use Psr\Http\Message\RequestInterface;
 class ClientSpec extends ObjectBehavior
 {
     private static $notificationId;
+    private static $letterNotificationId;
 
     function let(){
 
@@ -594,6 +595,8 @@ class ClientSpec extends ObjectBehavior
       $response->shouldHaveKey( 'id' );
       $response['id']->shouldBeString();
 
+      self::$letterNotificationId = $response['id']->getWrappedObject();
+
       $response->shouldHaveKey( 'reference' );
       $response['reference']->shouldBe("client-ref");
 
@@ -694,5 +697,34 @@ class ClientSpec extends ObjectBehavior
           $received_text['notify_number']->shouldBeString();
           $received_text['content']->shouldBeString();
       }
+    }
+
+    function it_receives_the_expected_response_when_getting_a_pdf_for_a_letter_notification() {
+
+      // Requires the 'it_receives_the_expected_response_when_sending_a_letter_notification' test to have completed successfully
+      if(is_null(self::$letterNotificationId)) {
+          throw new UnexpectedValueException('Notification ID not set');
+      }
+
+      $count = 0;
+
+      # try 15 times with 3 secs sleep between each attempt, to get the PDF
+      while ( True ) {
+        // this might fail if the pdf file hasn't been created/virus scanned yet, so check a few times.
+        try {
+          // missing personalisation
+          $resp = $this->getPdfForLetter( self::$letterNotificationId );
+          break;
+        } catch (ApiException $e) {
+          if( $e->getErrors()[0]['error'] != 'PDFNotReadyError' || $count >= 15 ) {
+            throw $e;
+          }
+
+          $count++;
+          sleep( 3 );
+        }
+      }
+      $resp->shouldBeString();
+      $resp->shouldStartWith( "%PDF-" );
     }
 }

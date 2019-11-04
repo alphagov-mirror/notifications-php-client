@@ -1158,4 +1158,118 @@ class ClientSpec extends ObjectBehavior
         }))->shouldHaveBeenCalled();
 
     }
+
+
+    //----------------------------------------------------------------------------------------------------------
+    // Getting a PDF for a letter
+
+
+    function it_generates_the_expected_request_when_getting_a_pdf_for_a_letter(){
+
+        //---------------------------------
+        // Test Setup
+
+        $id = self::SAMPLE_ID;
+        $expected_url = self::BASE_URL . sprintf( Client::PATH_NOTIFICATION_PDF, $id );
+
+        $this->httpClient->sendRequest( Argument::type('Psr\Http\Message\RequestInterface') )->willReturn(
+            new Response(
+                200,
+                ['Content-type'  => 'application/pdf'],
+                'foobar'
+            )
+        );
+
+        //---------------------------------
+        // Perform action
+
+        $this->getPdfForLetter( $id );
+
+        //---------------------------------
+        // Check result
+
+        // Check the expected Request was sent.
+        $this->httpClient->sendRequest( Argument::that(function( $v ) use ( $expected_url ) {
+
+            // Check a request was sent.
+            if( !( $v instanceof RequestInterface ) ){
+                return false;
+            }
+
+            // With the correct URL
+            if( $v->getUri() != $expected_url ){
+                return false;
+            }
+
+            // Include the correct token header
+            if( $v->getHeader('Authorization') != [ 'Bearer '.self::TEST_JWT_TOKEN ] ){
+                return false;
+            }
+
+            return true;
+
+        }))->shouldHaveBeenCalled();
+
+    }
+
+    function it_receives_the_expected_response_when_getting_a_pdf_for_a_letter(){
+
+        //---------------------------------
+        // Test Setup
+
+        $id = self::SAMPLE_ID;
+
+        $this->httpClient->sendRequest( Argument::type('Psr\Http\Message\RequestInterface') )->willReturn(
+            new Response(
+                200,
+                ['Content-type'  => 'application/pdf'],
+                'foobar'
+            )
+        );
+
+        //---------------------------------
+        // Perform action
+
+        $response = $this->getPdfForLetter( $id );
+
+        //---------------------------------
+        // Check result
+
+        $response->shouldBeEqualTo('foobar');
+
+    }
+
+    function it_receives_an_exception_when_getPdfForLetter_returns_400(){
+
+        //---------------------------------
+        // Test Setup
+
+        $code = 400;
+        $body = [
+          'status' => $code,
+          'errors' => [
+            [
+              'error' => 'SomeErrorType',
+              'message' => 'Some error message'
+            ]
+          ]
+        ];
+        $response = new Response(
+            $code,
+            ['Content-type'  => 'application/json'],
+            json_encode($body)
+        );
+
+        $this->httpClient->sendRequest( Argument::type('Psr\Http\Message\RequestInterface') )->willReturn(
+            $response
+        );
+
+        //---------------------------------
+        // Perform action & check result
+
+        $this->shouldThrow(
+            new NotifyException\ApiException( "HTTP:{$code}", $code, $body, $response )
+        )->duringGetPdfForLetter( self::SAMPLE_ID );
+
+    }
 }
