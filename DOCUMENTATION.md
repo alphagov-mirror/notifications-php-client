@@ -612,16 +612,11 @@ try {
 
 ### Arguments
 
-#### notification_id (required)
+#### notificationId (required)
 
-The ID of the notification. You can find the notification ID in the response to the [original notification method call](/python.html#get-the-status-of-one-message-response).
+The ID of the notification. You can find the notification ID in the response to the [original notification method call](#get-the-status-of-one-message-response).
 
-You can also find it in your [GOV.UK Notify Dashboard](https://www.notifications.service.gov.uk).
-
-1. Sign in to GOV.UK Notify and select __Dashboard__.
-1. Select either __emails sent__, __text messages sent__, or __letters sent__.
-1. Select the relevant notification.
-1. Copy the notification ID from the end of the page URL, for example `https://www.notifications.service.gov.uk/services/af90d4cb-ae88-4a7c-a197-5c30c7db423b/notification/ID`.
+You can also find it by signing in to [GOV.UK Notify](https://www.notifications.service.gov.uk) and going to the __API integration__ page.
 
 ### Response
 
@@ -814,14 +809,9 @@ $pdf_file = $notifyClient->getPdfForLetter(
 
 #### notificationId (required)
 
-The ID of the notification. You can find the notification ID in the response to the [original notification method call](/python.html#get-the-status-of-one-message-response).
+The ID of the notification. You can find the notification ID in the response to the [original notification method call](#get-the-status-of-one-message-response).
 
-You can also find it in your [GOV.UK Notify Dashboard](https://www.notifications.service.gov.uk).
-
-1. Sign into GOV.UK Notify and select __Dashboard__.
-1. Select __letters sent__.
-1. Select the relevant notification.
-1. Copy the notification ID from the end of the page URL, for example `https://www.notifications.service.gov.uk/services/af90d4cb-ae88-4a7c-a197-5c30c7db423b/notification/ID`.
+You can also find it by signing in to [GOV.UK Notify](https://www.notifications.service.gov.uk) and going to the __API integration__ page.
 
 ### Response
 
@@ -1004,7 +994,7 @@ The parameters in the personalisation argument must match the placeholder fields
 
 ### Arguments
 
-#### template_id (required)
+#### templateId (required)
 
 The ID of the template. Sign in to GOV.UK Notify and go to the __Templates__ page.
 
@@ -1051,7 +1041,7 @@ This API call returns one page of up to 250 received text messages. You can get 
 
 You can only get the status of messages that are 7 days old or newer.
 
-You can also set up [callbacks](/php.html#callbacks) for received text messages.
+You can also set up [callbacks](#callbacks) for received text messages.
 
 ## Enable received text messages
 
