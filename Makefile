@@ -36,18 +36,14 @@ generate-env-file: ## Generate the environment file for running the tests inside
 
 .PHONY: prepare-docker-runner-image
 prepare-docker-runner-image: ## Prepare the Docker builder image
-	make -C docker build
+	docker pull `grep "FROM " Dockerfile | cut -d ' ' -f 2` || true
+	docker build -t ${DOCKER_BUILDER_IMAGE_NAME} .
 
 .PHONY: build-with-docker
 build-with-docker: prepare-docker-runner-image ## Build inside a Docker container
 	docker run -i --rm \
 		--name "${DOCKER_CONTAINER_PREFIX}-build" \
 		-v "`pwd`:/var/project" \
-		-e http_proxy="${HTTP_PROXY}" \
-		-e HTTP_PROXY="${HTTP_PROXY}" \
-		-e https_proxy="${HTTPS_PROXY}" \
-		-e HTTPS_PROXY="${HTTPS_PROXY}" \
-		-e NO_PROXY="${NO_PROXY}" \
 		${DOCKER_BUILDER_IMAGE_NAME} \
 		make build
 
@@ -56,28 +52,18 @@ test-with-docker: prepare-docker-runner-image generate-env-file ## Run tests ins
 	docker run -i --rm \
 		--name "${DOCKER_CONTAINER_PREFIX}-test" \
 		-v "`pwd`:/var/project" \
-		-e http_proxy="${HTTP_PROXY}" \
-		-e HTTP_PROXY="${HTTP_PROXY}" \
-		-e https_proxy="${HTTPS_PROXY}" \
-		-e HTTPS_PROXY="${HTTPS_PROXY}" \
-		-e NO_PROXY="${NO_PROXY}" \
 		--env-file docker.env \
 		${DOCKER_BUILDER_IMAGE_NAME} \
-		make test
+		make build test
 
 .PHONY: integration-test-with-docker
 integration-test-with-docker: prepare-docker-runner-image generate-env-file ## Run integration tests inside a Docker container
 	docker run -i --rm \
 		--name "${DOCKER_CONTAINER_PREFIX}-integration-test" \
 		-v "`pwd`:/var/project" \
-		-e http_proxy="${HTTP_PROXY}" \
-		-e HTTP_PROXY="${HTTP_PROXY}" \
-		-e https_proxy="${HTTPS_PROXY}" \
-		-e HTTPS_PROXY="${HTTPS_PROXY}" \
-		-e NO_PROXY="${NO_PROXY}" \
 		--env-file docker.env \
 		${DOCKER_BUILDER_IMAGE_NAME} \
-		make integration-test
+		make build integration-test
 
 .PHONY: clean-docker-containers
 clean-docker-containers: ## Clean up any remaining docker containers
